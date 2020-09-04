@@ -1,0 +1,44 @@
+OpenShift: Working with Internal Docker Registry
+
+OpenShift provides an internal container image registry that can be deployed in an OpenShift environment to locally manage images.
+
+Docker Registry Management
+It is likely that the registry was deployed automatically during the OpenShift installation process.
+
+Check if the registry service is already present:
+$ oc adm registry --dry-run
+Docker registry "docker-registry" service exists
+
+Get deployment configuration:
+$ oc get dc -n default
+NAME              REVISION   DESIRED   CURRENT   TRIGGERED BY
+docker-registry   1          2         2         config
+registry-cosole   1          1         1         config
+router            1          2         2         config
+
+Get the image of the registry:
+$ oc describe dc/docker-registry -n default | grep Image
+    Image:	registry.lab.example.com/openshift3/ose-docker-registry:v3.9.14
+Delete Docker Registry
+Since we know the image the registry was created from, we can easily recreate it.
+
+Delete the registry and its service account:
+$ oc delete all -l docker-registry -n default
+$ oc delete serviceaccounts/registry -n default
+$ oc delete clusterrolebindings/registry-registry-role -n default
+
+Create a Docker Registry from the Image
+Create a docker registry using the image:
+$ oc adm registry --images=registry.lab.example.com/openshift3/ose-docker-registry:v3.9.14 --replicas=2 --selector='region=infra' -n default
+Browse Docker Registry
+
+To browse docker registry, you can install docker-registry-cli script:
+$ sudo yum install python-flask python-requests git
+$ git clone https://github.com/vivekjuneja/docker_registry_cli
+$ cd docker_registry_cli
+
+Run the following command to expose the integrated docker registry to the hostname intreg.lab.example.com:
+$ oc expose service docker-registry --hostname=intreg.lab.example.com
+
+The command will create a route with the same name as the service by default. Note that you will need to configure TLS security on the route, or allow insecure docker registries in /etc/docker/daemon.json. Once done, you can list all images in the docker registry:
+$ python ./browser.py intreg.lab.example.com list all
