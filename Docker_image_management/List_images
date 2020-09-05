@@ -1,1 +1,10 @@
-#
+#To List Images that are stored in Cache
+  $ docker images
+
+#Searching for Images in Registries
+	$ docker search [OPTIONS] <term>
+	$ docker search httpd | wc -l			# only list 25 images from the list
+		OPTIONS are:
+			--automated=true	#List only automated builds, where the image files are built using a Dockerfile.
+			--no-trunc=true		#Do not truncate the output.
+			--stars=N			#Display images with at least N stars provided by users from the registry.
