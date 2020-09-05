@@ -1,0 +1,187 @@
+#Chapter-03-01_Managing the Life Cycle of Containers
+
+# CREATING CONTAINER
+1. To Run a container
+	$ docker run rhscl/httpd-24-rhel7
+
+2. Verify the running containers
+	$ docker ps
+	Note: for each containers the randomID and random name will generate
+
+3. Assign container name manually
+	$ docker run --name my-httpd-container rhscl/httpd-24-rhel7
+
+4. Run container in detach mode
+	$ docker run --name my-httpd-container -d rhscl/httpd-24-rhel7
+
+5.  To run a command inside container
+	$ docker run rhscl/httpd-24-rhel7 ls /tmp
+
+6. Run a container executing a Bash shell
+	$ docker run --name my-httpd-container -it rhscl/httpd-24-rhel7 /bin/bash 	# this is only for attach mode
+
+
+
+#RUNNING COMMANDS IN A CONTAINER
+1. Run command in a container using the container id
+	$ docker exec <Container ID> cat /etc/hostname
+
+2. Run command in a container using the container name
+	$ docker exec my-httpd-container cat /etc/hostname
+
+
+
+#DEMONSTRATION: CREATING CONTAINERS
+1. Run rhel7 container with dd command
+	$ docker run --name demo-container rhel7 dd if=/dev/zero of=/dev/null
+
+2. Verify the running containers
+	$ docker ps
+
+3. stop the demo container 
+	$ docker stop demo-container
+
+4. Verify the running containers
+	$ docker ps
+
+5. Run the rhel container without specifying name
+	$ docker run rhel7 dd if=/dev/zero of=/dev/null
+
+6. Verify the running containers
+	$ docker ps
+
+7. stop the container 
+	$ docker stop hopeful_dubinsky
+
+8. Run the rhel container with detached mode
+	$ docker run --name demo-container-2 -d rhel7 dd if=/dev/zero of=/dev/null
+
+9. Stop the container
+	$ docker stop demo-container-2
+
+10. To Run a container to just execute a command (Verify the files in /etc and exit)
+	$ docker run --name demo-container-3 rhel7 ls /etc
+
+11. Verify the running containers (will get 0 running containers)
+	$ docker ps
+
+12. To Run a container in interactive mode
+	$ docker run --name demo-container-4 -it rhel7 /bin/bash
+	$ exit		#Exit from the bash
+
+13. Remove all the stopped containers
+	$ docker ps -a
+	$ docker rm demo-container demo-container-2 demo-container-3 demo-container-4
+	or
+	$ docker rm $(docker ps -aq)
+
+14. To Remove the rhel7 container image
+	$ docker rmi rhel7
+
+
+
+#MANAGING CONTAINERS
+
+1. To list all the running containers
+	$ docker ps
+
+2. To verify the stopped containers that are not discarded
+	$ docker ps -a
+
+3. To get the metadata of running or stopped containers
+	$ docker inspect my-httpd-container
+	$ docker inspect -f '{{ .NetworkSettings.IPAddress }}' my-httpd-container
+
+4. To stop the container gracefully
+	$ docker stop my-httpd-container
+
+5. To stop the container forcefully
+	$ docker kill my-httpd-container
+
+6. To kill the container with signal
+	$ docker kill -s SIGKILL my-httpd-container
+
+7. To restart the container
+	$ docker restart my-httpd-container
+
+8. To delete a container, discarding its state and filesystem
+	$ docker rm my-httpd-container
+
+9. To delete containers at same time
+	$ docker rm $(docker ps -aq)
+
+10. To stop all containers
+	docker stop $(docker ps -q)
+
+
+# DEMONSTRATION: MANAGING A CONTAINER
+
+1. Run the container
+	$ docker run --name my-httpd-container -d rhscl/httpd-24-rhel7
+
+2. List all the running Containers
+	$ docker ps
+
+3. Stop the container 
+	$ docker stop my-httpd-container
+
+4. Verify the container is not running
+	$ docker ps
+
+5. Run a new container with same name (A conflict Error will display)
+	$ docker run --name my-httpd-container -d rhscl/httpd-24-rhel7
+
+6. List all the containers (Running and Exited) 
+	$ docker ps -a
+
+7. Run the httpd container
+	$ docker run --name demo-1-httpd -d rhscl/httpd-24-rhel7
+
+8. To List metadata about a running or stopped container
+	$ docker inspect demo-1
+	$ docker inspect demo-1-httpd
+
+9. To get specific item from container using inspect command
+	$ docker inspect -f '{{ .NetworkSettings.IPAddress }}' demo-1-httpd
+
+10. To Access the Container Bash
+	$ docker exec -it demo-1-httpd /bin/bash
+	
+11. Create a new file in the container and exit
+	$ echo do285 > /opt/rh/httpd24/root/var/www/html/d0285.html
+	$ exit
+	
+12. Verify the content in html page
+	$ curl 172.17.0.2:8080/do285.html
+
+13. Restart the container and verify the page
+	$ docker restart demo-1-httpd
+	$ docker inspect demo-1-httpd | grep IPAddress
+	$ curl 172.17.0.2:8080/do285.html
+	
+14. Stop the container
+	$ docker stop demo-1-httpd
+	$ docker ps
+
+15. Start a new http container
+	$ docker run --name demo-2-httpd -d rhscl/httpd-24-rhel7
+
+16. Verify the ipaddress and verify the page (previous page will not exists)
+	$ docker inspect demo-2-httpd | grep IPAddress
+	$ curl 172.17.0.2:8080/do285.html
+
+17. Clean the containers and images
+	$ docker kill demo-2-httpd
+	$ docker ps -a
+	$ docker rm $(docker ps -aq)
+	$ docker ps -a
+	
+18. Tag and push images to registry
+EX01:
+	$ docker images		# List the images
+	$ docker tag rhel7 registry.lab.example.com:5000/rhel7 # Tag the image
+	$ docker images # List the images
+	$ docker push registry.lab.example.com:5000/rhel7	# Push the Image
+EX02:	
+	$ docker tag rhscl/httpd-24-rhel7 registry.lab.example.com:5000/rhscl/httpd-24-rhel7
+	$ docker push registry.lab.example.com:5000/rhscl/httpd-24-rhel7

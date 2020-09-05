@@ -1,0 +1,47 @@
+#Chapter-03-03-GE_Accessing Docker Networks
+# ACCESSING DOCKER NETWORKS
+By default, the Docker engine uses a bridged network mode, which through the use of iptables and NAT, allows containers to connect to the host machines network.
+
+#MAPPING NETWORK PORTS
+1. Use the container host network model combined with network address translation (NAT) rules to allow the external access.
+	$ docker run -d --name httpd -p 8080:80 do276/httpd
+
+2.  To specify an IP address for the port forward
+	$ docker run -d --name httpd -p 192.168.1.5:8080:80 d0276/httpd
+
+3. Container picks a random available port:
+	$ docker run -d --name httpd -p 192.168.1.5::80 d0276/httpd
+
+4. It is possible to listen on all interfaces and have an available port picked automatically
+	$ docker run -d --name httpd -p 80 d0276/httpd
+
+# GE: LOADING THE DATABASE
+
+1. Create a persistent directory in local system as below 
+	$ mkdir /var/local/mysql
+	$ chcon -R -t svirt_sandbox_file_t /var/local/mysql
+	$ chown -R 27:27 /var/local/mysql/
+
+2. Run the mysql db instance with persistent and DB port map
+	$ docker run -d --name mysqldb-port -d -v /var/local/mysql:/var/lib/mysql/data -p 13306:3306 -e MYSQL_USER=vinod -e MYSQL_PASSWORD=redhat -e MYSQL_DATABASE=items -e MYSQL_ROOT_PASSWORD=r00tpa55 rhscl/mysql-57-rhel7
+
+3. Load the sql data in to tables
+	$ cat db.sql
+		use items;
+		create table people (id int(11) NOT NULL,name varchar(255) DEFAULT NULL,code varchar(255) DEFAULT NULL,PRIMARY KEY (id));
+		insert into people (id,name,code) values (1,'vinod','39');
+		insert into people (id,name,code) values (2,'sai','38');
+	$ mysql -uvinod -h 127.0.0.1 -predhat -P13306 items < /home/student/DO285/labs/load-mysqldb/db.sql
+	$ mysql -uvinod -h 127.0.0.1 -predhat -P13306 items -e "SELECT * FROM people"
+
+4. Another way to verify the data is by running the mysql command inside the container
+	$ docker ps
+	$ docker exec -it mysqldb-port /bin/bash
+	bash-4.2$ mysql -uroot items -e "select * from people"
+	or
+	docker exec -it mysqldb-port /opt/rh/rh-mysql57/root/usr/bin/mysql -uroot items -e "select * from people"
+
+5. Clean up
+	$ docker stop mysqldb-port
+	$ docker rm mysqldb-port
+	$ rm -rf /var/local/mysql

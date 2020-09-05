@@ -1,0 +1,77 @@
+# Docker Installation
+
+1. Create a directory
+	mkdir /rhel7
+	
+2. Add Entry in the fstab to mount the DVD drive with the above created mount directory 
+	vi /etc/fstab
+		/dev/sr0        /rhel7  iso9660         defaults        0       0
+
+3. Run the below command to mount 
+	mount -a
+
+4. Create a custom repository
+	cd /etc/yum.repos.d/
+	vi custom.repos
+		[rhel7]
+		name = RHEL7
+		description = RHEL7
+		baseurl = file:///rhel7
+		gpgcheck = 0
+		enabled = 1
+
+5. Install the package to verify the repo configuration
+	yum install -y yum-utils
+
+6. Create a centos repository 
+	vim CentOS-Base.repo
+		[base]
+		name=CentOS $releasever – Base
+		baseurl=http://mirror.centos.org/centos/7/os/$basearch/
+		gpgcheck=0
+		enabled=1
+
+		[updates]
+		name=CentOS $releasever – Updates
+		baseurl=http://mirror.centos.org/centos/7/updates/$basearch/
+		gpgcheck=0
+		enabled=1
+
+		[extras]
+		name=CentOS $releasever – Extras
+		baseurl=http://mirror.centos.org/centos/7/extras/$basearch/
+		gpgcheck=0
+		enabled=1
+
+7. Run the Below Command To install docker
+	yum install docker -y
+
+8. Run the Below Command To Verify the Installaion
+	docker --version
+
+9. Start and enable the docker service
+	systemctl enable --now docker
+	systemctl status docker
+
+10. Test the docker installation
+	docker pull hello-world
+	docker images
+	docker run hello-world
+	
+11. Running the docker with non-root user
+	useradd student
+	password student
+	groupadd docker
+	usermod -aG docker student
+	reboot
+	
+12. Configuring the docker (adding the registry, block registry and add insecure registry
+	vi /etc/sysconfig/docker 
+		ADD_REGISTRY='--add-registry registry.lab.example.com:5000 --add-registry registry.access.redhat.com --add-registry registry.redhat.io --add-registry docker-registry-default.apps.lab.example.com'
+		INSECURE_REGISTRY='--insecure-registry registry.lab.example.com:5000 --insecure-registry docker-registry-default.apps.lab.example.com'
+		BLOCK_REGISTRY='--block-registry=all'
+		
+#IMPORTANT:
+TO add the registries add into the below file
+vi /etc/sysconfig/docker
+ADD_REGISTRY='--add-registry registry.access.redhat.com'

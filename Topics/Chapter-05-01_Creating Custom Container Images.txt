@@ -1,0 +1,68 @@
+#05: CREATING CUSTOM CONTAINER IMAGES
+#REUSING EXISTING DOCKERFILES
+Two common ways of building a new container image are as follows:
+1. Run operating system commands inside a container and then commit the image.
+2. Use a Dockerfile that invokes operating system commands and uses an operating system image as the parent.
+
+#USING THE OPENSHIFT SOURCE-TO-IMAGE TOOL
+1. Start a container from a base container image called the builder image, which includes a programming language runtime and essential development tools such as compilers and package managers.
+2. Fetch the application source code, usually from a Git server, and send it to the container.
+3. Build the application binary files inside the container.
+4. Save the container, after some clean up, as a new container image, which includes the programming language runtime and the application binaries.
+
+# BUILDING CUSTOM CONTAINER IMAGES WITH DOCKERFILE
+1. Create a working directory.
+2. Write the Dockerfile specification.
+3. Build the image with the docker command.
+
+# Sample Docker File
+mkdir custom-apache
+cd custom-apache
+cat Dockerfile
+	# This is a comment line
+	FROM rhel7:7.5
+	LABEL description="This is a custom httpd container image"
+	MAINTAINER John Doe <jdoe@xyz.com>
+	RUN yum install -y httpd
+	EXPOSE 80
+	ENV LogLevel "info"
+	ADD http://someserver.com/filename.pdf /var/www/html
+	COPY ./src/ /var/www/html/
+	USER apache
+	ENTRYPOINT ["/usr/sbin/httpd"]
+	CMD ["-D", "FOREGROUND"]
+
+#DEMO: Creating a image using Docker file
+1. Create a directory
+	$ mkdir sample-container
+	$ cd  sample-container
+
+2. Create a Docker File
+	$ vim Dockerfile
+		FROM rhel7:7.5
+		MAINTAINER username <username@example.com>
+		LABEL version="1.0" description="This is a simple container image" creationDate="31 March 2018"
+		ENV VAR1="hello" VAR2="world"
+		ADD training.repo /etc/yum.repos.d/training.repo
+		RUN yum install -y bind-utils && yum clean all
+
+3. Build the image
+	$ docker build -t do285/rhel .
+	
+4. List the images
+	$ docker images
+
+5. Inspect the Images
+	$ docker inspect do285/rhel | grep Author
+	$ docker inspect do285/rhel | grep 'version\|description\|creationDate'
+
+6. Run the container with the created image
+	$ docker run --name simple-container -it do285/rhel /bin/bash
+	$ env | grep 'VAR1\|VAR2'
+	$ dig materials.example.com
+	$ exit
+
+7. Clean Up
+	$ docker rm simple-container
+	$ docker rmi do285/rhel
+	$ docker rmi -f $(docker images -q)

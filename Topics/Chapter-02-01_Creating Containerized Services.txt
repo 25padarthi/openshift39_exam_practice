@@ -1,0 +1,51 @@
+#Chapter-02-01: CREATING CONTAINERIZED SERVICES
+
+1. Searching the image from the docker client
+	docker search registry.access.redhat.com/rhscl/mysql-57-rhel7
+
+2. Fetching Image
+	docker pull registry.access.redhat.com/rhscl/mysql-57-rhel7		# This will always pull the latest version
+	docker pull registry.access.redhat.com/rhscl/mysql-57-rhel7:5.7	# This will pull the version 5.5
+
+3. Listing the Images available in the local cache
+	docker images
+		An image name is prefixed with a registry name, which is usually the FQDN name of the registry host
+		[registry_uri/][user_name/]image_name[:tag]
+		For example: docker.io/library/mysql:latest.
+
+4. Creating a Container
+
+Run the container in foreground
+	docker run -e MYSQL_ROOT_PASSWORD=redhat registry.access.redhat.com/rhscl/mysql-57-rhel7
+
+Run the container in background
+	docker run -d -e MYSQL_ROOT_PASSWORD=redhat mysql
+
+Run the container with the user specified name 
+	docker run -d -e MYSQL_ROOT_PASSWORD=redhat --name mysql-container mysql
+
+Run the container with pseudo-terminal # only for foreground process
+	docker run --name mysql-container2 -e MYSQL_ROOT_PASSWORD=redhat -it mysql /bin/bash
+
+5. Leveraging redhat container catalog
+	https://access.redhat.com/containers/
+	registry.access.redhat.com
+
+6. Pulling image from specific repository
+	docker run --name mysql-basic -e MYSQL_USER=user1 -e MYSQL_PASSWORD=mypa55 -e MYSQL_DATABASE=items -e MYSQL_ROOT_PASSWORD=r00tpa55 -d registry.access.redhat.com/rhscl/mysql-80-rhel7
+
+7. pulling image from default repository
+	docker run --name mysql-basic -e MYSQL_USER=user1 -e MYSQL_PASSWORD=mypa55 -e MYSQL_DATABASE=items -e MYSQL_ROOT_PASSWORD=r00tpa55 -d centos/mysql-57-centos7
+
+8. To Stop the container - Open another console and run the following command
+	docker ps
+	docker stop <Container ID/Container Name>
+	
+9. To remove the containers with exit status
+   docker ps -a
+   docker rm <Container ID> 	or 	docker rm $(docker ps -qa)
+   
+10. To Remove the Images from cache
+   docker images
+   docker rmi <Image Name> 		or 	docker rmi $(docker images -q)
+   

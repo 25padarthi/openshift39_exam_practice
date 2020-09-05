@@ -1,0 +1,31 @@
+# VERIFYING THE INSTALLATION
+htpasswd -c /etc/origin/master/htpasswd admin
+login to node1
+oc login -u admin -p redhat https://master.lab.example.com:8443 --insecure-skip-tls-verify=true
+oc adm policy add-cluster-role-to-user cluster-admin admin
+
+oc get pods
+oc new-app registry.access.redhat.com/rhscl/httpd-24-rhel7 --name custom-httpd
+
+oc login -u admin https://master.lab.example.com:8443 --insecure-skip-tls-verify=true
+
+# Verifying Node status
+oc get nodes
+
+# Verifying Router and Registry Status
+oc get pods
+
+#Building an Application
+oc new-project smoke-test
+oc project
+oc new-app registry.access.redhat.com/rhscl/httpd-24-rhel7
+oc status	#To view the app
+oc logs -f bc/httpd-24-rhel7
+oc logs -f dc/httpd-24-rhel7 #To verify the deployment process of the pod
+
+oc get pods
+oc get pods -o wide				#To get the pods running on which node
+oc get pods --all-namespaces	#To verify on which name space the pods are running
+oc expose svc/httpd-24-rhel7	#To Expose the service
+oc get routes					#To verify the exposed service/dns
+curl http://httpd-24-rhel7-smoke-test.apps.lab.example.com

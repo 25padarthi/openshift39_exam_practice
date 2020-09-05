@@ -1,0 +1,94 @@
+#Chapter-04-01_Managing Container Images
+#ACCESSING REGISTRIES
+#PUBLIC REGISTRIES
+	1. docker hub
+	2. redhat
+
+# PRIVATE REGISTRY
+	$ vim /etc/sysconfig/docker			#Add private registries here
+		ADD_REGISTRY='--add-registry registry.access.redhat.com --add-registry services.lab.example.com:5000'
+	$ systemctl restart docker.service	#To Restart the Docker service
+
+#Searching for Images in Registries
+	$ docker search [OPTIONS] <term>
+	$ docker search httpd | wc -l			# only list 25 images from the list
+		OPTIONS are:
+			--automated=true	#List only automated builds, where the image files are built using a Dockerfile.
+			--no-trunc=true		#Do not truncate the output.
+			--stars=N			#Display images with at least N stars provided by users from the registry.
+
+#To get the list of images present in the registry
+	$ curl https://registry.lab.example.com/v2/_catalog?n=4 | python -m json.tool
+
+#Searching for Image Tags in Registries
+1. Define variables for your user name and password.
+	UNAME="username"
+	UPASS="password"
+
+2. Retrieve the authentication token. Pass the user name and password with the POST method.
+	$ curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${UNAME}'", "password": "'${UPASS}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token
+
+3. Retrieve the list of repositories that you have access to. The Authorization: JWT header is used for authenticating the request.
+	$ curl -s -H "Authorization: JWT token" https://hub.docker.com/v2/repositories/user name/?page_size=10000 | jq -r '.results|.[]|.name'
+
+4. You can also retrieve a list of all images and tags by iterating on the output of the previous command.'
+	repository=$(curl -s -H "Authorization: JWT token https://hub.docker.com/v2/repositories/user name/?page_size=10000 | jq -r '.results|.[]|.name')
+	for image in ${repository}; do curl -s -H "Authorization: JWT token" https://hub.docker.com/v2/repositories/user name/${image}/tags/?page_size=100 | jq -r '.results|.[]|.name')	
+
+#Searching for Images in Private Registries
+	$ docker-registry-cli <docker-registry-host>:<port> <list|search> [options] [ssl] #syntax
+	$ docker-registry-cli registry.lab.example.com list all ssl	#to get the list of all images available at registry.lab.example.com
+	$ docker-registry-cli registry.lab.example.com search mysql ssl	#To search for a specific string
+
+#Pulling Images
+	$ docker pull [OPTIONS] NAME[:TAG] | [REGISTRY_HOST[:REGISTRY_PORT]/]NAME[:TAG]	# syntax
+		--all-tags=true
+		--disable-content-trust=true	
+	$ docker pull docker.io/nginx		# to pull image from registry
+
+#Listing Cached Copies of Images
+	$ docker images
+	Note: The image files are stored in the /var/lib/docker directory from the docker daemon's host if the default configuration is used. If LVM thin storage is used to store images, the LVM volume mount point is used instead.
+
+#Image Tags
+	$ docker pull mysql:5.6	#To pull the mysql image with tag 5.6
+	$ docker run mysql:5.6	#To runt he mysql container with tag 5.6
+
+#MANIPULATING CONTAINER IMAGES
+1. Save the container image to a .tar file.
+2. Publish (push) the container image to an image registry.
+
+#SAVING AND LOADING IMAGES
+	$ docker save [-o FILE_NAME] IMAGE_NAME[:TAG]	# syntax
+	$ docker save -o mysql.tar registry.access.redhat.com/rhscl/mysql-57-rhel7	# to save the image
+	$ docker load -i mysql.tar
+	Note: gzip and gunzip will use for compression and uncompress
+
+#PUBLISHING IMAGES TO A REGISTRY
+	$ docker tag IMAGE[:TAG] [REGISTRYHOST/][USERNAME/]NAME[:TAG] #syntax
+	$ docker pull docker.io/nginx
+	$ docker tag nginx registry.lab.example.com:5000/nginx
+
+#DELETING IMAGES
+	$ docker rmi [OPTIONS] IMAGE [IMAGE...] #syntax
+		--force=true
+
+#DELETING ALL IMAGES
+	$ docker rmi $(docker images -q)
+
+#MODIFYING IMAGES
+	$ docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]
+		--author=""
+		--message=""
+	$ docker run -d --name mysql-basic -e MYSQL_ROOT_PASSWORD=r00tpa55 rhscl/mysql-57-rhel7
+	$ docker ps
+	$ docker diff mysql-basic		#what files are changed from base image
+		Any added file is tagged with an A, and any changed file is tagged with a C.
+	$ docker commit mysql-basic mysql-custom
+	$ docker images
+
+#TAGGING IMAGES
+	$ docker tag [OPTIONS] IMAGE[:TAG] [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+
+#Removing Tags from Images
+	$ docker rmi devops/mysql:snapshot

@@ -1,0 +1,75 @@
+Chapter-04-01-GE_Creating A Custom Apache Container Image
+#CREATING A CUSTOM APACHE CONTAINER IMAGE
+
+1. Create a container
+	$ docker run -d --name official-httpd -p 8180:80 centos/httpd
+
+2. Verify the container
+	$ docker ps
+
+3. Enter into the container bash adn modify the html page
+	$ docker exec -it official-httpd /bin/bash
+	$ echo "D0285 Page" > /var/www/html/do285.html
+	$ exit
+
+4. Verify the page
+	$ curl 127.0.0.1:8180/do285.html
+
+5. Verify what contents are changed from base image
+	$ docker diff official-httpd
+
+6. Stop the container
+	$ docker stop official-httpd
+
+7. Commit the changed image
+	$ docker commit -a "Vinod Padarthi" -m "Added do285.html page" official-httpd
+
+8. Verify the new commit image
+	$ docker images
+
+9. Tag the image
+	$ docker tag ca83bb103ee9 do285/custom-httpd
+	
+10. Verify the image is tagged properly or not
+	$ docker images
+
+11. Tag the image with the destination repository
+	$ docker tag do285/custom-httpd registry.lab.example.com:5000/do285/custom-httpd:v1.0
+
+12. Verify the images
+	$ docker images
+
+13. Push the images to repository
+	$ docker push registry.lab.example.com:5000/do285/custom-httpd:v1.0
+	
+14. Search the image
+	$ docker-registry-cli custom-httpd
+
+15. Clean up
+	$ docker ps
+	$ docker stop $(docker ps -q)
+	$ docker ps -a
+	$ docker rm $(docker ps -aq)
+
+16. Run the container with the new image created
+	$ docker run -d --name test-httpd -p 8280:80 do285/custom-httpd:v1.0
+
+17. Verify the container
+	$ docker ps
+	
+18. Verify the page. will get the commited index html page	
+	$ curl http://127.0.0.1:8280/do285.html
+
+19. Login to the container
+	$ docker exec -it test-httpd /bin/bash
+	$ echo "This is My first website" > /var/www/html/index.html
+	$ exit
+
+20. Verify the page
+	$ curl http://127.0.0.1:8280/
+
+21. Clean up
+	$ docker ps
+	$ docker stop $(docker ps -q)
+	$ docker ps -a
+	$ docker rm $(docker ps -aq)

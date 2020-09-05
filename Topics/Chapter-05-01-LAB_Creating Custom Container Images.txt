@@ -1,0 +1,62 @@
+#Chapter-05-01-LAB_Creating Custom Container Images
+# LAB: 	CREATING CUSTOM CONTAINER IMAGES
+
+1. Create a directory and change the directory
+	$ mkdir custom-images/
+	$ cd custom-images
+
+2. Create a docker image file
+	$ vim Dockerfile
+		FROM rhel7:7.5
+		MAINTAINER Your Name <youremail>
+		ENV PORT 8080
+		ADD training.repo /etc/yum.repos.d/training.repo
+		RUN yum install -y httpd && yum clean all
+		RUN sed -ri -e '/^Listen 80/c\Listen ${PORT}' /etc/httpd/conf/httpd.conf
+		RUN chown -R apache:apache /etc/httpd/logs/ && chown -R apache:apache /run/httpd/
+		USER apache
+		EXPOSE ${PORT}
+		COPY ./src/ /var/www/html/
+		CMD ["httpd", "-D", "FOREGROUND"]
+
+3. Build docker images using the docker file
+	$ docker build -t do285/custom-apache .
+
+4. Verify the image and the build success
+	$ docker images
+
+5. Run the container with newly created image
+	$ docker run --name lab-custom-images -d -p 20080:8080 do285/custom-apache
+
+6. Verify the container status
+	$ docker ps
+
+7. Verify the url
+	$ curl 127.0.0.1:20080
+
+8. Clean up
+	$ docker stop lab-custom-images
+	$ docker rm lab-custom-images
+	$ docker rmi -f do285/custom-apache
+	$ docker rmi -f $(docker images -q)
+
+
+# IMPORTANT
+• Building an image from a Dockerfile is a three-step process:
+	1. Create a working directory.
+	2. Write the Dockerfile specification.
+	3. Build the image using the docker build command.
+• The RUN instruction is responsible for modifying image contents.
+• The following instructions are responsible for adding metadata to images:
+	• LABEL
+	• MAINTAINER
+	• EXPOSE
+• The default command that runs when the container starts can be changed with the RUN and ENTRYPOINT instructions.
+• The following instructions are responsible for managing the container environment:
+	• WORKDIR
+	• ENV
+	• USER
+• The VOLUME instruction creates a mount point in the container.
+• The Dockerfile provides two instructions to include resources in the container image:
+	• ADD
+	• COPY

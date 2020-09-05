@@ -1,0 +1,72 @@
+master min hardware requirement:
+---------------------------
+	16GB memory
+	4vcpu
+	40GB - /var 
+
+node min hardware requirement:
+------------------------
+	8GB memory	
+	4vcpu 
+	40GB - /var 
+	
+OS: centos 7
+User Account used : root 
+
+1. Add /etc/host entry with the node details. 
+2. setup ssh key based auth between master and nodes
+
+Install (Master)
+------------------
+yum install wget git net-tools bind-utils yum-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct
+yum upgrade
+reboot
+cd ~
+git clone https://github.com/openshift/openshift-ansible
+cd openshift-ansible
+git checkout release-3.11
+yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sed -i -e "s/^enabled=1/enabled=0/" /etc/yum.repos.d/epel.repo
+yum -y --enablerepo=epel install ansible pyOpenSSL	
+yum install docker-1.13.1
+systemctl enable docker
+systemctl start docker
+
+Configure Ansible Inventory(Master)
+---------------------------------
+
+#vim /etc/ansible/hosts
+[OSEv3:children]
+masters
+nodes
+etcd
+
+[OSEv3:vars]
+ansible_ssh_user=root
+ansible_become=true
+openshift_deployment_type=origin
+
+[masters]
+node01
+
+[etcd]
+node01
+
+[nodes]
+node01 openshift_node_group_name='node-config-master'
+node02 openshift_node_group_name='node-config-compute'
+node02 openshift_node_group_name='node-config-infra'
+
+#ansible -m ping all ( You should get all green output for the hosts)
+
+#vim /etc/ansible/ansible.cfg
+host_key_checking = False
+remote_user = root
+private_key_file = /home/root/.ssh/id_rsa
+host_key_auto_add = True
+
+
+Run Ansible ( Master)
+----------------------
+#ansible-playbook /root/openshift-ansible/playbooks/prerequisites.yml
+#ansible-playbook /root/openshift-ansible/playbooks/deploy_cluster.yml

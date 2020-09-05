@@ -1,0 +1,28 @@
+subscription-manager repos --enable=rhel-7-server-ansible-2.4-rpms --enable=rhel-7-server-ose-3.9-rpms
+yum install atomic-openshift-utils.noarch
+yum install openshift-ansible-playbooks
+
+or
+
+1. download and install the python-click
+	rpm -ivh python-click-6.3-1.el7.noarch.rpm
+2. Configure the repositories
+cat openshift.repo
+	[openshift39]
+	name = openshift39
+	description = openshift39
+	baseurl = https://buildlogs.centos.org/centos/7/paas/x86_64/openshift-origin39/
+	gpgcheck = 0
+	enabled = 1
+
+cat ansible.repo
+	[ansible243]
+	name = ansible243
+	description = ansible243
+	baseurl = https://releases.ansible.com/ansible/rpm/release/epel-7-x86_64/
+	gpgcheck = 0
+	enabled = 1
+	
+3. install packages
+	yum install atomic-openshift-utils.noarch
+	yum install openshift-ansible-playbooks

@@ -1,0 +1,97 @@
+sudo yum -y install centos-release-openshift-origin39 wget git net-tools bind-utils yum-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct vim git mlocate
+sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sudo yum -y --enablerepo=epel install pyOpenSSL
+sudo yum -y install https://cbs.centos.org/kojifiles/packages/ansible/2.4.3.0/1.el7/noarch/ansible-2.4.3.0-1.el7.noarch.rpm
+sudo yum -y install https://cbs.centos.org/kojifiles/packages/ansible/2.4.3.0/1.el7/noarch/ansible-doc-2.4.3.0-1.el7.noarch.rpm
+
+yum install -y docker-1.13.1
+
+vi /etc/sysconfig/docker-storage-setup
+DEVS=/dev/vdb
+VG=docker-vg
+
+docker-storage-setup
+
+systemctl enable --now docker.service
+
+192.168.1.9 master.lab.example.com master
+192.168.1.10 compute.lab.example.com compute
+192.168.1.12 infra.lab.example.com infra
+
+192.168.1.20 master.lab.example.com master
+192.168.1.21 node1.lab.example.com node1
+
+yum install -y atomic-openshift-utils.noarch
+yum install -y openshift-ansible-playbooks
+
+/usr/share/ansible/openshift-ansible/playbooks
+
+touch /etc/docker/certs.d/registry.access.redhat.com/redhat-ca.crt
+
+ssh-keygen
+ssh-copy-id master
+ssh-copy-id compute
+shh-copy-id infra
+
+cat inventory
+[masters]
+master.lab.example.com
+
+[nodes]
+master.lab.example.com openshift_node_labels="{'region':'infra', 'zone':'default'}"
+node1.lab.example.com openshift_node_labels="{'region':'primary', 'zone':'east'}"
+
+[etcd]
+master.lab.example.com
+
+[OSEv3:children]
+masters
+etcd
+nodes
+
+[OSEv3:vars]
+ansible_ssh_user=root
+enable_excluders=False 
+enable_docker_excluder=False 
+openshift_enable_service_catalog=False
+# This setting is mandatory if the DNS configuration is not proper
+ansible_service_broker_install=False
+
+#General Cluster Variables
+openshift_deployment_type=origin
+openshift_release=v3.9
+openshift_image_tag=v3.9.14
+openshift_disable_check=disk_availability,docker_storage,memory_availability
+#docker_image_availability
+
+#Cluster Authentication Variables
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true','challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+#OpenShift Networking Variables
+os_firewall_use_firewalld=true
+#openshift_master_api_port=443
+#openshift_master_console_port=443
+openshift_master_default_subdomain=apps.lab.example.com
+
+#Modifications Needed for a Disconnected Install
+oreg_url=registry.access.redhat.com/openshift3/ose-${component}:v3.9.14
+openshift_examples_modify_imagestreams=true
+openshift_docker_additional_registries=registry.access.redhat.com
+openshift_docker_blocked_registries=docker.io
+#Image Prefixes
+openshift_web_console_prefix=registry.access.redhat.com/openshift3/ose-
+cockpit_deployer_prefix='registry.access.redhat.com/openshift3/'
+openshift_service_catalog_image_prefix='registry.example.com/openshift3/ose-'
+ansible_service_broker_image_prefix='registry.example.com/openshift3/ose-'
+template_service_broker_prefix='registry.example.com/openshift3/ose-'
+service_broker_etcd_image_prefix=registry.access.redhat.com/rhel7/
+openshift_cockpit_deployer_prefix='registry.access.redhat.com/openshift3/'
+openshift_cockpit_deployer_basename='registry-console'
+openshift_cockpit_deployer_version='v3.9.14'
+
+
+ansible-playbook -i inventory.ini openshift-ansible/playbooks/prerequisites.yml
+ansible-playbook -i inventory.ini openshift-ansible/playbooks/deploy_cluster.yml
+
+
+htpasswd -c /etc/origin/master/htpasswd admin

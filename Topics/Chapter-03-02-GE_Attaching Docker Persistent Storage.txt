@@ -1,0 +1,41 @@
+#Chapter-03-02-GE_Attaching Docker Persistent Storage
+# GE: PERSISTING A MYSQL DATABASE
+1. Create a directory with correct permissions
+	$ mkdir -p /var/local/mysql
+	$ chcon -R -t svirt_sandbox_file_t /var/local/mysql
+	$ chown -R 27:27 /var/local/mysql/
+
+2. Pull the mysql image	
+	$ docker pull rhscl/mysql-57-rhel7
+
+3. Run the container
+	$ docker run --name persist-mysqldb -d -v /var/local/mysql:/var/lib/mysql/data -e MYSQL_USER=user1 -e MYSQL_PASSWORD=mypa55 -e MYSQL_DATABASE=items -e MYSQL_ROOT_PASSWORD=r00tpa55 rhscl/mysql-57-rhel7
+
+4. Verify the container run status
+	$ docker ps
+
+5. Verify that the data is written in a local directory
+	$ ls -l /var/local/mysql/
+
+6. Stop the container
+	$ docker stop persist-mysqldb
+
+7. Clean up
+	$ docker ps
+	$ docker stop $(docker ps -q)
+	$ docker ps -a
+	$ docker rm $(docker ps -aq)
+	
+
+# IMPORTANT
+ephemeral  				# Meaning Not Persistent
+
+svirt_sandbox_file_t 	#setype of the the persistent directory created
+
+#One way to setup a host directory
+mkdir /var/dbfiles
+chown -R 27:27 /var/dbfiles
+chcon -t svirt_sandbox_file_t /var/dbfiles
+
+#Mounting Volume
+docker run -v /var/dbfiles:/var/lib/mysql mysql

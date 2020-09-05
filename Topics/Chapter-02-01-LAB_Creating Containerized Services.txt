@@ -1,0 +1,43 @@
+#LAB: CREATING CONTAINERIZED SERVICES
+
+1. Start a container named httpd-basic in the background, and forward port 8080 to port 80 in the container. Use the httpd container image with the 2.4 tag.
+NOTE: Use the -p 8080:80 option with docker run command to forward the port.
+This command starts the Apache HTTP server in the background and returns to the Bash prompt.
+	$ docker run --name httpd-basic -p 8080:8080 -d httpd:2.4
+	or
+	$ docker run --name httpd-basic -p 8080:8080 -d registry.access.redhat.com/rhscl/httpd-24-rhel7
+
+2. Test the httpd-basic container.
+	$ docker ps
+
+From workstation, attempt to access http://localhost:8080 using any web browser.
+An "It works!" message is displayed, which is the index.html page from the Apache HTTP server container running on workstation.
+	$ curl http://localhost:8080
+
+3. Customize the httpd-basic container.
+3.1. Start a Bash session inside the container and customize the existing content of index.html page.
+	$ docker exec -it httpd-basic bash
+
+3.2. From the Bash session, verify the index.html file under /usr/local/apache2/htdocs directory using the ls -la command.
+	$ ls -l /usr/local/apache2/htdocs/
+	or 
+	Verify the configuration httpd.conf to find the html root directory
+	$ grep DocumentRoot /etc/httpd/conf/httpd.conf
+	$ ls -l /opt/rh/httpd24/root/var/www/html
+
+3.3. Change the index.html page to contain the text Hello World, replacing all of the existing content.
+	$ cd /opt/rh/httpd24/root/var/www/html
+	$ echo "Hello Vinod. How are you!" > index.html
+	$ exit
+
+3.4. Attempt to access http://localhost:8080 again, and verify that the web page has been updated.
+	$ curl http://localhost:8080
+
+4.1. Stop and remove the httpd-basic container.
+	$ docker ps
+	$ docker stop httpd-basic
+	$ docker rm httpd-basic
+
+4.2. Remove the httpd-basic container image from the local Docker cache.
+	$ docker images
+	$ docker rmi httpd:2.4

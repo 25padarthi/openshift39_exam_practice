@@ -1,0 +1,45 @@
+#Chapter-05-01-GE_Creating A Basic Apache Container Image
+#GE: CREATING A BASIC APACHE CONTAINER IMAGE
+ 
+1. Create a directory and change the directory
+	$ mkdir basic-apache
+	$ cd basic-apache
+
+2. Create a docker file
+	$ vim Dockerfile
+		FROM rhel7:7.5
+		MAINTAINER Your Name <youremail>
+		LABEL description="A basic Apache container on RHEL 7"
+		ADD CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo
+		RUN yum -y update && yum install -y httpd && yum clean all
+		EXPOSE 80
+		CMD ["httpd", "-D", "FOREGROUND"]
+
+3. Build the image using the docker file
+	$ docker build -t do285/apache .
+
+4. Wait for the build to complete and list the images
+	$ docker images
+
+5. Run the container with the new image
+	$ docker run --name lab-apache -d -p 10080:80 do285/apache
+
+6. Verify the container status
+	$ docker ps
+
+7. Verify the url
+	$ curl 127.0.0.1:10080
+
+8. Login to the container and modify the index.html page
+	$ docker exec -it lab-apache /bin/bash
+	$ echo "Container Created using Dockerfile" > /var/www/html/index.html
+	$ exit
+
+9. Verify the url
+	$ curl 127.0.0.1:10080
+
+10. Clean up
+	$ docker stop lab-apache
+	$ docker rm lab-apache
+	$ docker rmi -f do285/apache
+	$ docker rmi -f $(docker images -q)

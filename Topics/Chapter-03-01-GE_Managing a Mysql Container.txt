@@ -1,0 +1,41 @@
+#Chapter-03-01-GE_Managing a Mysql Container
+
+1. Run the Container without environment variables
+	$ docker run --name mysql-db rhscl/mysql-57-rhel7
+	Note: This will not start, because environment variables it required
+
+2. Verify the logs
+	$ docker logs mysql-db
+
+3. Run the mysql container with environment variables
+	$ docker run --name mysql -d -e MYSQL_USER=user1 -e MYSQL_PASSWORD=mypa55 -e MYSQL_DATABASE=items -e MYSQL_ROOT_PASSWORD=r00tpa55 rhscl/mysql-57-rhel7
+
+4. Verify the container status
+	$ docker ps
+
+5. Verify the ip address of the container
+	$ docker inspect -f '{{ .NetworkSettings.IPAddress }}' mysql
+
+6. Install the mysql client packages
+	$ yum install mysql -y
+	
+7. Connect to Mysql database from host
+	$ mysql -uuser1 -h 172.17.0.2 -p items
+
+8. Create a tables and insert the data and verify the data 
+	MySQL [items]> create table projects (id int(11) NOT NULL, name varchar(255) DEFAULT NULL, code varchar(155) DEFAULT NULL, PRIMARY KEY (id));
+	MySQL [items]> insert into projects (id,name,code) values (1,'Devops','D0285');
+	MySQL [items]> select * from projects
+	MySQL [items]> exit
+
+9. Run another container with bash
+	$ docker run --name mysql-2 -it rhscl/mysql-57-rhel7 /bin/bash
+	$ mysql -uroot	# will get error
+	$ exit
+
+10. Clean up	
+	$ docker ps
+	$ docker stop $(docker ps -q)
+	$ docker ps -a
+	$ docker rm $(docker ps -aq)
+	

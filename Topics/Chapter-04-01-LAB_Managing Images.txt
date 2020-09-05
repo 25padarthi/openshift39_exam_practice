@@ -1,0 +1,48 @@
+#Chapter-04-01-LAB_Managing Images
+#LAB: MANAGING IMAGES
+
+1. Search for nginx images
+	$ docker-registry-cli registry.lab.example.com search nginx ssl
+
+2. Ppull the nginx image
+	$ docker pull nginx
+
+3. Verify the images
+	$ docker images
+
+4. Run the container
+	$ docker run --name official-nginx -d -p 8080:80 registry.lab.example.com/nginx
+	
+5. Verify the url
+	$ curl http://127.0.0.1:8080 
+	
+6. Login to the container and modify the index.html page
+	$ docker exec -it official-nginx /bin/bash
+	$ echo 'DO285 Page' > /usr/share/nginx/html/index.html
+	$ exit
+
+7. Verify the URL
+	$ curl http://127.0.0.1:8080
+
+8. Stop the container
+	$ docker stop official-nginx
+
+9. Commit the changed image
+	$ docker commit -a 'Your Name' -m 'Changed index.html page' official-nginx
+
+10. Verify the images
+	$ docker images
+
+11. Tag the image with <none> name
+	$ docker tag d77b234dec1c do285/mynginx:v1.0
+
+12. Run the Container with the new tagged image
+	$ docker run -d --name my-nginx -p 8280:80 do285/mynginx:v1.0
+
+13. Verify the URL
+	$ curl 127.0.0.1:8280
+
+14. Clean Up
+	$ docker stop my-nginx
+	$ docker rm my-nginx official-nginx
+	$ docker rmi do285/mynginx:v1.0

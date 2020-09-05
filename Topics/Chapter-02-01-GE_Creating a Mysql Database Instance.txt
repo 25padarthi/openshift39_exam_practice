@@ -1,0 +1,30 @@
+#GUIDED EXCERSISE: CREATING A MYSQL DATABASE INSTANCE
+
+1. Create a mysql container instance
+	docker run --name mysql-basic -e MYSQL_USER=user1 -e MYSQL_PASSWORD=mypa55 -e MYSQL_DATABASE=items -e MYSQL_ROOT_PASSWORD=r00tpa55 -d centos/mysql-57-centos7
+
+2. Verify the container started without errors
+	docker ps
+
+3. Access the container sandbox
+	docker exec -it mysql-basic /bin/bash
+
+4. login to the mysql using root user
+	mysql -uroot
+
+5. create a table and insert data to a table
+	mysql> show databases;
+	mysql> use items;
+	mysql> create table projects (id int(11) NOT NULL,name varchar(255) DEFAULT NULL,code varchar(255) DEFAULT NULL,PRIMARY KEY (id));
+	mysql> show tables
+	mysql> insert into projects (id,name,code) values (1,'devops','DO285');
+	mysql> select * from projects;
+	mysql> exit
+	bash-4.2$ exit
+
+6. Stop and remove the images
+	docker ps							# To verify the container running or not
+	docker stop mysql-basic				# To Stop the running container
+	docker rm mysql-basic				# To Remove the data from the Running Container
+	docker rmi centos/mysql-57-centos7	# To Remove the Docker Image from cache
+	docker images
