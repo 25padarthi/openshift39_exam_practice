@@ -1,1 +1,5 @@
-#
+#SAVING AND LOADING IMAGES
+	$ docker save [-o FILE_NAME] IMAGE_NAME[:TAG]	# syntax
+	$ docker save -o mysql.tar registry.access.redhat.com/rhscl/mysql-57-rhel7	# to save the image
+	$ docker load -i mysql.tar
+	Note: gzip and gunzip will use for compression and uncompress
