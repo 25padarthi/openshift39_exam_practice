@@ -1,1 +1,3 @@
-#
+#Image Tags
+	$ docker pull mysql:5.6	#To pull the mysql image with tag 5.6
+	$ docker run mysql:5.6	#To runt he mysql container with tag 5.6
