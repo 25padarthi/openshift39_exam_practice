@@ -8,9 +8,13 @@ yum -y install dnsmasq bind-utils
 cat /etc/dnsmasq.conf
 	resolv-file=/etc/resolv.dnsmasq
 	address=/master.lab.example.com/192.168.1.20
-	address=/node1.example.com/192.168.1.21
+	address=/node1.lab.example.com/192.168.1.21
+	address=/node2.lab.example.com/192.168.1.22
+	address=/registry.lab.example.com/192.168.1.20
+	address=/services.lab.example.com/192.168.1.20
+	address=/nfs.lab.example.com/192.168.1.20
 	address=/apps.lab.example.com/192.168.1.20
-	address=/apiserver.kube-service-catalog.svc/192.168.1.20
+
 
 # dns resolve configuration
 cat /etc/resolv.conf
@@ -27,4 +31,5 @@ cp -pr /etc/resolv.conf /etc/resolv.dnsmasq
 	nameserver 192.168.1.20
 
 # Restart the dnsmasq service
+systemctl enable --now dnsmasq.service
 systemctl restart dnsmasq
