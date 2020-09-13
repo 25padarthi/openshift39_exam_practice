@@ -67,7 +67,7 @@
 	
 12. Configuring the docker (adding the registry, block registry and add insecure registry
 	vi /etc/sysconfig/docker 
-		ADD_REGISTRY='--add-registry registry.lab.example.com:5000 --add-registry registry.access.redhat.com --add-registry registry.redhat.io --add-registry docker-registry-default.apps.lab.example.com'
+		ADD_REGISTRY='--add-registry registry.lab.example.com:5000 --add-registry registry.access.redhat.com --add-registry registry.redhat.io --add-registry docker.io --add-registry docker-registry-default.apps.lab.example.com'
 		INSECURE_REGISTRY='--insecure-registry registry.lab.example.com:5000 --insecure-registry docker-registry-default.apps.lab.example.com'
 		BLOCK_REGISTRY='--block-registry=all'
 		
