@@ -3,7 +3,7 @@ yum install -y nfs-utils
 systemctl start nfs-server rpcbind
 systemctl enable nfs-server rpcbind
 
-mkdir -p /exports/OSE_registry
+mkdir -p /exports/{OSE_registry,OSE_metrics}
 chmod -R 700 /exports
 chown -R nfsnobody:nfsnobody /exports
 
