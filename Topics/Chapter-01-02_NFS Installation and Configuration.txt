@@ -3,10 +3,6 @@ yum install -y nfs-utils
 systemctl start nfs-server rpcbind
 systemctl enable nfs-server rpcbind
 
-mkdir -p /exports/{OSE_registry,OSE_metrics}
-chmod -R 700 /exports
-chown -R nfsnobody:nfsnobody /exports
-
 mkdir -p /shares/{pv001,pv002,pv003}
 mkdir -p /exports/registry
 
@@ -17,7 +13,6 @@ chmod -R 700 /exports
 chown -R nfsnobody:nfsnobody /exports
 
 vi /etc/exports
-/exports/OSE_registry *(rw,sync,all_squash)
    /shares/pv001 *(rw,sync,all_squash)
    /shares/pv002 *(rw,sync,all_squash)
    /shares/pv003 *(rw,sync,all_squash)
@@ -28,4 +23,3 @@ firewall-cmd --permanent --add-service mountd
 firewall-cmd --permanent --add-service rpc-bind
 firewall-cmd --permanent --add-service nfs
 firewall-cmd --reload
-
